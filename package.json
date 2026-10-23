@@ -1,0 +1,15 @@
+{
+  "name": "tkwednc-ck",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "dev": "concurrently --names \"frontend,backend\" --colors --prefix-colors \"blue,green\" \"npm run dev --prefix frontend\" \"npm run dev --prefix backend\"",
+    "install": "concurrently --names \"frontend,backend\" --colors --prefix-colors \"blue,green\" \"npm i --prefix frontend\" \"npm i --prefix backend\"",
+    "build": "npm run build --prefix frontend"
+  },
+  "license": "ISC",
+  "dependencies": {
+    "concurrently": "^9.2.4"
+  }
+}
