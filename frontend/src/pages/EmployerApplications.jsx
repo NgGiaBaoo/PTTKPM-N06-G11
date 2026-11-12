@@ -5,8 +5,9 @@ import { useAuth } from '../context/AuthContext'
 import { toast } from '../components/Toast'
 
 const statusConfig = {
-  Pending: { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⏳', label: 'Đang chờ' },
-  Approved: { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', icon: '✅', label: 'Đã duyệt' },
+  Submitted: { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⏳', label: 'Đã gửi' },
+  UnderReview: { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: '🔎', label: 'Đang xem xét' },
+  Accepted: { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', icon: '✅', label: 'Được chấp nhận' },
   Rejected: { color: '#dc2626', bg: '#fef2f2', border: '#fecaca', icon: '❌', label: 'Từ chối' },
 }
 
@@ -97,7 +98,7 @@ export default function EmployerApplications() {
       </div>
 
       <div className="filter-tabs">
-        {['All', 'Pending', 'Approved', 'Rejected'].map((f) => (
+        {['All', 'Submitted', 'UnderReview', 'Accepted', 'Rejected'].map((f) => (
           <button
             key={f}
             className={`filter-tab ${filterStatus === f ? 'active' : ''}`}
@@ -179,19 +180,22 @@ export default function EmployerApplications() {
                 </div>
 
                 <div className="eapp-footer">
-                  {status === 'Pending' && (
+                  {!['Accepted', 'Rejected', 'Withdrawn'].includes(status) && (
                     <div className="eapp-actions">
-                      <button className="btn btn-approve btn-with-icon" onClick={() => handleStatusChange(app.ApplicationID || app.id, 'Approved')}>
-                        <span>✅</span> Duyệt đơn
+                      <button className="btn btn-secondary" onClick={() => handleStatusChange(app.ApplicationID || app.id, 'UnderReview')}>
+                        <span>🔎</span> Đang xem xét
+                      </button>
+                      <button className="btn btn-approve btn-with-icon" onClick={() => handleStatusChange(app.ApplicationID || app.id, 'Accepted')}>
+                        <span>✅</span> Chấp nhận
                       </button>
                       <button className="btn btn-reject btn-with-icon" onClick={() => handleStatusChange(app.ApplicationID || app.id, 'Rejected')}>
                         <span>❌</span> Từ chối
                       </button>
                     </div>
                   )}
-                  {status !== 'Pending' && (
+                  {['Accepted', 'Rejected', 'Withdrawn'].includes(status) && (
                     <div className="eapp-processed">
-                      {status === 'Approved' ? '✅ Đã duyệt đơn ứng tuyển này' : '❌ Đã từ chối đơn ứng tuyển này'}
+                      {status === 'Accepted' ? '✅ Đã chấp nhận đơn ứng tuyển này' : status === 'Rejected' ? '❌ Đã từ chối đơn ứng tuyển này' : '↩️ Sinh viên đã rút hồ sơ'}
                     </div>
                   )}
                 </div>

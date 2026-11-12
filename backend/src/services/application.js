@@ -4,8 +4,8 @@ function createApplication(data) {
   return ApplicationModel.createApplication(data);
 }
 
-function getAllApplications() {
-  return ApplicationModel.getAllApplications();
+function getAllApplications(options) {
+  return ApplicationModel.getAllApplications(options);
 }
 
 function getApplicationById(id) {
@@ -20,16 +20,16 @@ function deleteApplication(id) {
   return ApplicationModel.deleteApplication(id);
 }
 
-function getApplicationsByJobId(jobId) {
-  return ApplicationModel.getApplicationsByJobId(jobId);
+function getApplicationsByJobId(jobId, options) {
+  return ApplicationModel.getApplicationsByJobId(jobId, options);
 }
 
-function getApplicationsByCandidateId(candidateId) {
-  return ApplicationModel.getApplicationsByCandidateId(candidateId);
+function getApplicationsByCandidateId(candidateId, options) {
+  return ApplicationModel.getApplicationsByCandidateId(candidateId, options);
 }
 
-function getApplicationsByEmployerId(employerId) {
-  return ApplicationModel.getApplicationsByEmployerId(employerId);
+function getApplicationsByEmployerId(employerId, options) {
+  return ApplicationModel.getApplicationsByEmployerId(employerId, options);
 }
 
 module.exports = { createApplication, getAllApplications, getApplicationById, updateApplication, deleteApplication, getApplicationsByJobId, getApplicationsByCandidateId, getApplicationsByEmployerId };

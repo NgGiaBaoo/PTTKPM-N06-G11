@@ -14,6 +14,9 @@ function normalize(payload) {
     email: payload.email || null,
     phone: payload.phone || null,
     address: payload.address || null,
+    businessCode: payload.businessCode || null,
+    industry: payload.industry || null,
+    description: payload.description || null,
     userId: payload.userId || null
   };
 }

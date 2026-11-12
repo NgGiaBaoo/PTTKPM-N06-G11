@@ -8,6 +8,7 @@ const adminItems = [
   { to: '/employers', label: 'Nhà tuyển dụng', icon: '\uD83C\uDFED' },
   { to: '/candidates', label: 'Ứng viên', icon: '\uD83D\uDC65' },
   { to: '/users', label: 'Người dùng', icon: '\uD83D\uDC64' },
+  { to: '/content-reports', label: 'Báo cáo nội dung', icon: '\u26A0' },
 ]
 
 const employerItems = [
@@ -19,9 +20,23 @@ const employerItems = [
 
 const candidateItems = [
   { to: '/dashboard', label: 'Tổng quan', icon: '\u2302' },
-  { to: '/jobs/browse', label: 'Việc làm', icon: '\uD83D\uDD0D' },
+  { to: '/jobs/browse', label: 'Việc làm & thực tập', icon: '\uD83D\uDD0D' },
+  { to: '/programs', label: 'Chương trình kết nối', icon: '\uD83E\uDD1D' },
   { to: '/candidate/applications', label: 'Đơn đã nộp', icon: '\u2709' },
   { to: '/profile', label: 'Hồ sơ cá nhân', icon: '\uD83D\uDC64' },
+]
+
+const commonItems = [
+  { to: '/notifications', label: 'Thông báo', icon: '\uD83D\uDD14' },
+  { to: '/security', label: 'Bảo mật', icon: '\uD83D\uDD12' },
+]
+
+const schoolItems = [
+  { to: '/dashboard', label: 'Tổng quan', icon: '\u2302' },
+  { to: '/programs', label: 'Chương trình kết nối', icon: '\uD83E\uDD1D' },
+  { to: '/employers', label: 'Doanh nghiệp', icon: '\uD83C\uDFED' },
+  { to: '/candidates', label: 'Sinh viên', icon: '\uD83D\uDC65' },
+  { to: '/verification-requests', label: 'Xác minh doanh nghiệp', icon: '\u2705' },
 ]
 
 export default function Sidebar() {
@@ -30,6 +45,7 @@ export default function Sidebar() {
 
   const navItems = user?.role === 'Admin' ? adminItems
     : user?.role === 'Employer' ? employerItems
+    : user?.role === 'SchoolStaff' ? schoolItems
     : candidateItems
 
   const handleLogout = async () => {
@@ -40,12 +56,12 @@ export default function Sidebar() {
   return (
     <aside className="sidebar">
       <div className="sidebar-header">
-        <h2>Tuyển Dụng</h2>
-        <span className="sidebar-subtitle">Hệ thống quản lý</span>
+        <h2>Đại học - Doanh nghiệp</h2>
+        <span className="sidebar-subtitle">Hệ thống kết nối</span>
       </div>
 
       <nav className="sidebar-nav">
-        {navItems.map((item) => (
+        {[...navItems, ...commonItems].map((item) => (
           <NavLink
             key={item.to}
             to={item.to}

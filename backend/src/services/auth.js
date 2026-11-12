@@ -15,6 +15,14 @@ function login(username, password) {
         return resolve({ success: false, message: "Invalid username or password" });
       }
 
+      if (user.AccountStatus && user.AccountStatus !== "Active") {
+        return resolve({ success: false, message: "Account is not active" });
+      }
+
+      if (user.EmailVerified === false) {
+        return resolve({ success: false, message: "Please verify your email before signing in" });
+      }
+
       const match = await bcrypt.compare(password, user.PasswordHash);
 
       if (!match) {
@@ -36,7 +44,14 @@ function login(username, password) {
 function getCurrentUser(userId) {
   return UserModel.getUserRecordById(userId).then((user) => {
     if (!user) return null;
-    return { id: user.UserID, username: user.Username, role: user.Role };
+    return {
+      id: user.UserID,
+      username: user.Username,
+      email: user.Email,
+      role: user.Role,
+      accountStatus: user.AccountStatus,
+      emailVerified: Boolean(user.EmailVerified)
+    };
   });
 }
 

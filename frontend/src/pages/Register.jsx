@@ -4,13 +4,13 @@ import { useAuth } from '../context/AuthContext'
 
 const roles = [
   { value: 'Employer', label: 'Nhà tuyển dụng' },
-  { value: 'Candidate', label: 'Ứng viên' },
+  { value: 'Student', label: 'Sinh viên' },
 ]
 
 export default function Register() {
   const { user, register, loading: authLoading } = useAuth()
   const navigate = useNavigate()
-  const [form, setForm] = useState({ username: '', password: '', role: 'Employer' })
+  const [form, setForm] = useState({ username: '', email: '', password: '', role: 'Employer' })
   const [error, setError] = useState('')
   const [loading, setLoading] = useState(false)
 
@@ -24,7 +24,7 @@ export default function Register() {
     setLoading(true)
     try {
       await register(form)
-      navigate('/dashboard')
+      navigate(`/verify-email?email=${encodeURIComponent(form.email)}`)
     } catch (err) {
       setError(err.response?.data?.error || 'Đăng ký thất bại')
     } finally {
@@ -41,6 +41,17 @@ export default function Register() {
         </div>
         {error && <div className="alert alert-error">{error}</div>}
         <form onSubmit={handleSubmit}>
+          <div className="form-group">
+            <label htmlFor="email">Email</label>
+            <input
+              id="email"
+              type="email"
+              value={form.email}
+              onChange={(e) => setForm({ ...form, email: e.target.value })}
+              placeholder="Email để xác minh tài khoản"
+              required
+            />
+          </div>
           <div className="form-group">
             <label htmlFor="username">Tên đăng nhập</label>
             <input

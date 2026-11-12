@@ -7,12 +7,16 @@ function mapEmployerRow(row) {
     companyName: row.CompanyName,
     email: row.Email,
     phone: row.Phone,
-    address: row.Address
+    address: row.Address,
+    verificationStatus: row.VerificationStatus,
+    businessCode: row.BusinessCode,
+    industry: row.Industry,
+    description: row.Description
   };
 }
 
 function createEmployer(data) {
-  const sql = `INSERT INTO Employers (UserID, CompanyName, Email, Phone, Address) VALUES (?, ?, ?, ?, ?)`;
+  const sql = `INSERT INTO EmployerProfiles (UserID, CompanyName, Email, Phone, Address) VALUES (?, ?, ?, ?, ?)`;
   const params = [data.userId, data.companyName, data.email, data.phone, data.address];
   return new Promise((resolve, reject) => {
     db.query(sql, params, (err, result) => {
@@ -22,11 +26,30 @@ function createEmployer(data) {
   });
 }
 
-function getAllEmployers() {
+function getAllEmployers(options = {}) {
+  const { pagination, keyword, verificationStatus, industry } = options;
+  const conditions = [];
+  const params = [];
+  if (keyword) {
+    conditions.push("(CompanyName LIKE ? OR BusinessCode LIKE ? OR Email LIKE ?)");
+    const value = `%${keyword}%`;
+    params.push(value, value, value);
+  }
+  if (verificationStatus) { conditions.push("VerificationStatus = ?"); params.push(verificationStatus); }
+  if (industry) { conditions.push("Industry LIKE ?"); params.push(`%${industry}%`); }
+  const where = conditions.length ? `WHERE ${conditions.join(" AND ")}` : "";
+  const base = `FROM EmployerProfiles ${where}`;
+  const listSql = `SELECT EmployerID, UserID, CompanyName, BusinessCode, Industry, Email, Phone,
+    Address, Description, VerificationStatus ${base}
+    ORDER BY CompanyName ASC LIMIT ? OFFSET ?`;
+  const countSql = `SELECT COUNT(*) AS total ${base}`;
   return new Promise((resolve, reject) => {
-    db.query("SELECT EmployerID, UserID, CompanyName, Email, Phone, Address FROM Employers", (err, results) => {
+    db.query(listSql, [...params, pagination.pageSize, pagination.offset], (err, results) => {
       if (err) return reject(err);
-      resolve(results.map(mapEmployerRow));
+      db.query(countSql, params, (countErr, countRows) => {
+        if (countErr) return reject(countErr);
+        resolve({ data: results.map(mapEmployerRow), total: countRows[0].total });
+      });
     });
   });
 }
@@ -34,7 +57,7 @@ function getAllEmployers() {
 function getEmployerById(id) {
   return new Promise((resolve, reject) => {
     db.query(
-      "SELECT EmployerID, UserID, CompanyName, Email, Phone, Address FROM Employers WHERE EmployerID = ?",
+      "SELECT EmployerID, UserID, CompanyName, BusinessCode, Industry, Email, Phone, Address, Description, VerificationStatus FROM EmployerProfiles WHERE EmployerID = ?",
       [id],
       (err, results) => {
         if (err) return reject(err);
@@ -52,8 +75,11 @@ function updateEmployer(id, data) {
   if (data.email !== undefined) { fields.push('Email = ?'); params.push(data.email); }
   if (data.phone !== undefined) { fields.push('Phone = ?'); params.push(data.phone); }
   if (data.address !== undefined) { fields.push('Address = ?'); params.push(data.address); }
+  if (data.businessCode !== undefined) { fields.push('BusinessCode = ?'); params.push(data.businessCode); }
+  if (data.industry !== undefined) { fields.push('Industry = ?'); params.push(data.industry); }
+  if (data.description !== undefined) { fields.push('Description = ?'); params.push(data.description); }
   if (fields.length === 0) return Promise.resolve(null);
-  const sql = `UPDATE Employers SET ${fields.join(', ')} WHERE EmployerID = ?`;
+  const sql = `UPDATE EmployerProfiles SET ${fields.join(', ')} WHERE EmployerID = ?`;
   params.push(id);
   return new Promise((resolve, reject) => {
     db.query(sql, params, (err, result) => {
@@ -65,7 +91,7 @@ function updateEmployer(id, data) {
 
 function deleteEmployer(id) {
   return new Promise((resolve, reject) => {
-    db.query("DELETE FROM Employers WHERE EmployerID = ?", [id], (err, result) => {
+    db.query("DELETE FROM EmployerProfiles WHERE EmployerID = ?", [id], (err, result) => {
       if (err) return reject(err);
       resolve(result.affectedRows > 0);
     });
@@ -75,7 +101,7 @@ function deleteEmployer(id) {
 function findEmployerByCompany(companyName) {
   return new Promise((resolve, reject) => {
     db.query(
-      "SELECT EmployerID FROM Employers WHERE CompanyName = ? LIMIT 1",
+      "SELECT EmployerID FROM EmployerProfiles WHERE CompanyName = ? LIMIT 1",
       [companyName],
       (err, results) => {
         if (err) return reject(err);
@@ -85,23 +111,10 @@ function findEmployerByCompany(companyName) {
   });
 }
 
-function insertEmployer(companyName, email) {
-  return new Promise((resolve, reject) => {
-    db.query(
-      "INSERT INTO Employers (CompanyName, Email) VALUES (?, ?)",
-      [companyName, email],
-      (err, result) => {
-        if (err) return reject(err);
-        resolve(result.insertId);
-      }
-    );
-  });
-}
-
 function findByUserId(userId) {
   return new Promise((resolve, reject) => {
     db.query(
-      "SELECT EmployerID, UserID, CompanyName, Email, Phone, Address FROM Employers WHERE UserID = ? LIMIT 1",
+      "SELECT EmployerID, UserID, CompanyName, BusinessCode, Industry, Email, Phone, Address, Description, VerificationStatus FROM EmployerProfiles WHERE UserID = ? LIMIT 1",
       [userId],
       (err, results) => {
         if (err) return reject(err);
@@ -111,4 +124,4 @@ function findByUserId(userId) {
   });
 }
 
-module.exports = { mapEmployerRow, createEmployer, getAllEmployers, getEmployerById, updateEmployer, deleteEmployer, findEmployerByCompany, insertEmployer, findByUserId };
+module.exports = { mapEmployerRow, createEmployer, getAllEmployers, getEmployerById, updateEmployer, deleteEmployer, findEmployerByCompany, findByUserId };

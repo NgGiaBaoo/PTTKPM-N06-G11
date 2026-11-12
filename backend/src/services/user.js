@@ -4,9 +4,9 @@ const UserModel = require("../models/User");
 const SALT_ROUNDS = 10;
 
 function normalizeRole(role) {
-  const allowed = ["Employer", "Candidate"];
+  const allowed = ["Student", "Employer", "SchoolStaff", "Admin"];
   if (!role || !allowed.includes(role)) {
-    return "Candidate";
+    return "Student";
   }
   return role;
 }
@@ -16,7 +16,15 @@ function createUser(user) {
     try {
       const hashedPassword = await bcrypt.hash(user.password, SALT_ROUNDS);
       const role = normalizeRole(user.role);
-      const result = await UserModel.createUser({ username: user.username, passwordHash: hashedPassword, role });
+      const result = await UserModel.createUser({
+        username: user.username,
+        email: user.email,
+        passwordHash: hashedPassword,
+        role,
+        createdBy: user.createdBy,
+        accountStatus: user.accountStatus || (user.createdBy ? "Active" : "Pending"),
+        emailVerified: user.emailVerified !== undefined ? user.emailVerified : Boolean(user.createdBy)
+      });
       resolve(result);
     } catch (err) {
       reject(err);
@@ -67,4 +75,18 @@ function deleteUser(id) {
   return UserModel.deleteUser(id);
 }
 
-module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser };
+async function changePassword(userId, currentPassword, newPassword) {
+  const user = await UserModel.getUserRecordById(userId);
+  if (!user || !(await bcrypt.compare(currentPassword, user.PasswordHash))) {
+    const error = new Error("Current password is incorrect");
+    error.statusCode = 400;
+    throw error;
+  }
+  return UserModel.updatePassword(userId, await bcrypt.hash(newPassword, SALT_ROUNDS));
+}
+
+async function resetPassword(userId, newPassword) {
+  return UserModel.updatePassword(userId, await bcrypt.hash(newPassword, SALT_ROUNDS));
+}
+
+module.exports = { createUser, getAllUsers, getUserById, updateUser, deleteUser, changePassword, resetPassword };

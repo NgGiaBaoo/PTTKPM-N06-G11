@@ -4,8 +4,9 @@ import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 
 const statusConfig = {
-  Pending: { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⏳' },
-  Approved: { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', icon: '✅' },
+  Submitted: { color: '#d97706', bg: '#fffbeb', border: '#fde68a', icon: '⏳' },
+  UnderReview: { color: '#2563eb', bg: '#eff6ff', border: '#bfdbfe', icon: '🔎' },
+  Accepted: { color: '#059669', bg: '#ecfdf5', border: '#a7f3d0', icon: '✅' },
   Rejected: { color: '#dc2626', bg: '#fef2f2', border: '#fecaca', icon: '❌' },
 }
 
@@ -57,9 +58,8 @@ export default function MyApplications() {
       ) : (
         <div className="application-cards">
           {apps.map((app) => {
-            // Normalize status: DB uses "Accepted" but UI uses "Approved"
             const rawStatus = app.Status || app.status || 'Unknown'
-            const status = rawStatus === 'Accepted' ? 'Approved' : rawStatus
+            const status = rawStatus
             const cfg = statusConfig[status] || { color: '#6b7280', bg: '#f9fafb', border: '#e5e7eb', icon: '❓' }
             return (
               <div key={app.ApplicationID || app.id} className="application-card" style={{ borderLeftColor: cfg.color }}>
@@ -69,7 +69,7 @@ export default function MyApplications() {
                     <span className="app-company">{app.CompanyName || app.companyName || 'Công ty'}</span>
                   </div>
                   <div className="app-status-badge" style={{ backgroundColor: cfg.bg, color: cfg.color, borderColor: cfg.border }}>
-                    {cfg.icon} {status === 'Approved' ? 'Đã duyệt' : status === 'Rejected' ? 'Từ chối' : 'Đang chờ'}
+                    {cfg.icon} {status === 'Accepted' ? 'Được chấp nhận' : status === 'UnderReview' ? 'Đang xem xét' : status === 'Rejected' ? 'Từ chối' : status === 'Withdrawn' ? 'Đã rút' : 'Đã nộp'}
                   </div>
                 </div>
                 <div className="app-card-body">
@@ -84,22 +84,22 @@ export default function MyApplications() {
                 </div>
                 <div className="app-card-footer">
                   <div className="status-timeline">
-                    <div className={`timeline-dot ${status === 'Pending' ? 'active' : ''} ${status === 'Approved' || status === 'Rejected' ? 'done' : ''}`}>
+                    <div className={`timeline-dot ${status === 'Submitted' ? 'active' : ''} ${status !== 'Submitted' ? 'done' : ''}`}>
                       <span>1</span>
                     </div>
-                    <div className={`timeline-line ${status === 'Approved' || status === 'Rejected' ? 'done' : ''}`}></div>
-                    <div className={`timeline-dot ${status === 'Approved' ? 'active' : ''} ${status === 'Approved' ? 'done' : ''}`}>
+                    <div className={`timeline-line ${status !== 'Submitted' ? 'done' : ''}`}></div>
+                    <div className={`timeline-dot ${status === 'UnderReview' ? 'active' : ''} ${['Accepted', 'Rejected'].includes(status) ? 'done' : ''}`}>
                       <span>2</span>
                     </div>
-                    <div className={`timeline-line ${status === 'Rejected' ? 'done rejected' : ''}`}></div>
-                    <div className={`timeline-dot ${status === 'Rejected' ? 'active rejected' : ''} ${status === 'Approved' ? 'done' : ''}`}>
+                    <div className={`timeline-line ${['Accepted', 'Rejected'].includes(status) ? 'done rejected' : ''}`}></div>
+                    <div className={`timeline-dot ${status === 'Rejected' ? 'active rejected' : ''} ${status === 'Accepted' ? 'done' : ''}`}>
                       <span>3</span>
                     </div>
                   </div>
                   <div className="timeline-labels">
-                    <span className={status === 'Pending' ? 'label-active' : ''}>Đã nộp</span>
-                    <span className={status === 'Approved' ? 'label-active' : ''}>Xem xét</span>
-                    <span className={status === 'Approved' ? 'label-active' : status === 'Rejected' ? 'label-rejected' : ''}>
+                    <span className={status === 'Submitted' ? 'label-active' : ''}>Đã nộp</span>
+                    <span className={status === 'UnderReview' ? 'label-active' : ''}>Xem xét</span>
+                    <span className={status === 'Accepted' ? 'label-active' : status === 'Rejected' ? 'label-rejected' : ''}>
                       {status === 'Rejected' ? 'Từ chối' : 'Hoàn tất'}
                     </span>
                   </div>

@@ -6,20 +6,31 @@ import { toast } from '../components/Toast'
 export default function Profile() {
   const { user } = useAuth()
   const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ fullName: '', email: '', phone: '', skills: '' })
+  const [form, setForm] = useState({
+    schoolId: '', studentCode: '', fullName: '', email: '', phone: '',
+    major: '', cohort: '', skills: '', careerOrientation: ''
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [cvs, setCvs] = useState([])
+  const [cvError, setCvError] = useState('')
 
   useEffect(() => {
     if (!user) return
-    if (user.role === 'Candidate') {
+    if (user.role === 'Student') {
       api.get(`/candidates/by-user/${user.id}`)
         .then((res) => {
           const p = res.data?.data
           if (p) {
             setProfile(p)
-            setForm({ fullName: p.fullName || '', email: p.email || '', phone: p.phone || '', skills: p.skills || '' })
+            setForm({
+              schoolId: p.schoolId || '', studentCode: p.studentCode || '',
+              fullName: p.fullName || '', email: p.email || '', phone: p.phone || '',
+              major: p.major || '', cohort: p.cohort || '', skills: p.skills || '',
+              careerOrientation: p.careerOrientation || ''
+            })
           }
+          api.get('/cvs').then((res) => setCvs(res.data)).catch(() => {})
         })
         .catch(() => {})
         .finally(() => setLoading(false))
@@ -27,6 +38,31 @@ export default function Profile() {
       setLoading(false)
     }
   }, [user])
+
+  const uploadCv = async (event) => {
+    const file = event.target.files?.[0]
+    if (!file) return
+    const data = new FormData()
+    data.append('cv', file)
+    try {
+      const response = await api.post('/cvs', data)
+      setCvs((current) => [response.data, ...current.map((cv) => ({ ...cv, isActive: false }))])
+      setCvError('')
+    } catch (err) {
+      setCvError(err.response?.data?.error || 'Không thể tải CV lên')
+    } finally {
+      event.target.value = ''
+    }
+  }
+
+  const deleteCv = async (id) => {
+    try {
+      await api.delete(`/cvs/${id}`)
+      setCvs((current) => current.filter((cv) => cv.id !== id))
+    } catch (err) {
+      setCvError(err.response?.data?.error || 'Không thể xóa CV')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -39,6 +75,7 @@ export default function Profile() {
         const res = await api.post('/candidates', { ...form, userId: user.id })
         setProfile(res.data?.data || res.data)
       }
+
       toast('Cập nhật hồ sơ thành công!')
     } catch (err) {
       toast(err.response?.data?.error || err.response?.data?.message || 'Lưu thất bại', 'error')
@@ -49,7 +86,7 @@ export default function Profile() {
 
   if (loading) return <div className="loading">Đang tải...</div>
 
-  if (user?.role !== 'Candidate') {
+  if (user?.role !== 'Student') {
     return (
       <div className="page-header">
         <h1>Hồ sơ cá nhân</h1>
@@ -79,6 +116,16 @@ export default function Profile() {
 
         <div className="profile-form-section">
           <form onSubmit={handleSubmit}>
+            <div className="form-row">
+              <div className="form-group">
+                <label>Mã trường</label>
+                <input type="number" min="1" value={form.schoolId} onChange={(e) => setForm({ ...form, schoolId: e.target.value })} required />
+              </div>
+              <div className="form-group">
+                <label>Mã sinh viên</label>
+                <input type="text" value={form.studentCode} onChange={(e) => setForm({ ...form, studentCode: e.target.value })} placeholder="SV20260002" required />
+              </div>
+            </div>
             <div className="form-group">
               <label>Họ và tên</label>
               <div className="input-icon-wrapper">
@@ -99,6 +146,20 @@ export default function Profile() {
                 <div className="input-icon-wrapper">
                   <span className="input-icon">&#9742;</span>
                   <input type="text" value={form.phone} onChange={(e) => setForm({ ...form, phone: e.target.value })} placeholder="0123 456 789" />
+                </div>
+                <div className="form-group">
+                  <label>Ngành học</label>
+                  <input type="text" value={form.major} onChange={(e) => setForm({ ...form, major: e.target.value })} />
+                </div>
+              </div>
+              <div className="form-row">
+                <div className="form-group">
+                  <label>Khóa học</label>
+                  <input type="text" value={form.cohort} onChange={(e) => setForm({ ...form, cohort: e.target.value })} />
+                </div>
+                <div className="form-group">
+                  <label>Định hướng nghề nghiệp</label>
+                  <input type="text" value={form.careerOrientation} onChange={(e) => setForm({ ...form, careerOrientation: e.target.value })} />
                 </div>
               </div>
               <div className="form-group">
@@ -129,6 +190,18 @@ export default function Profile() {
               </button>
             </div>
           </form>
+          <section className="card" style={{ marginTop: '1.5rem' }}>
+            <h2>CV của tôi</h2>
+            <p>Chỉ chấp nhận PDF hoặc Word, tối đa 5MB.</p>
+            {cvError && <div className="alert alert-error">{cvError}</div>}
+            <input type="file" accept=".pdf,.doc,.docx" onChange={uploadCv} />
+            {cvs.map((cv) => (
+              <div key={cv.id} className="notification-item">
+                <span>{cv.fileName} {cv.isActive ? '(đang sử dụng)' : ''}</span>
+                <button className="btn btn-secondary" type="button" onClick={() => deleteCv(cv.id)}>Xóa</button>
+              </div>
+            ))}
+          </section>
         </div>
       </div>
     </div>

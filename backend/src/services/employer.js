@@ -4,8 +4,8 @@ function createEmployer(data) {
   return EmployerModel.createEmployer(data);
 }
 
-function getAllEmployers() {
-  return EmployerModel.getAllEmployers();
+function getAllEmployers(options) {
+  return EmployerModel.getAllEmployers(options);
 }
 
 function getEmployerById(id) {

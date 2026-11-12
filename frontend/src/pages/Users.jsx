@@ -20,6 +20,15 @@ export default function Users() {
     } catch (err) {
       alert(err.response?.data?.error || 'Xóa thất bại')
     }
+
+    const changeStatus = async (user, status) => {
+      try {
+        await api.post(`/users/${user.id}/status`, { status })
+        setUsers((current) => current.map((item) => item.id === user.id ? { ...item, accountStatus: status } : item))
+      } catch (err) {
+        alert(err.response?.data?.error || 'Cập nhật trạng thái thất bại')
+      }
+    }
   }
 
   if (loading) return <div className="loading">Đang tải...</div>
@@ -37,6 +46,7 @@ export default function Users() {
               <th>ID</th>
               <th>Tên đăng nhập</th>
               <th>Vai trò</th>
+              <th>Trạng thái</th>
               <th>Thao tác</th>
             </tr>
           </thead>
@@ -46,13 +56,17 @@ export default function Users() {
                 <td>{u.id}</td>
                 <td>{u.username}</td>
                 <td>{u.role || '--'}</td>
+                <td>{u.accountStatus || '--'}</td>
                 <td className="actions">
+                  {u.accountStatus === 'Locked'
+                    ? <button className="btn btn-sm btn-edit" onClick={() => changeStatus(u, 'Active')}>Mở khóa</button>
+                    : <button className="btn btn-sm btn-secondary" onClick={() => changeStatus(u, 'Locked')}>Khóa</button>}
                   <button className="btn btn-sm btn-delete" onClick={() => handleDelete(u.id)}>Xóa</button>
                 </td>
               </tr>
             ))}
             {users.length === 0 && (
-              <tr><td colSpan={4} className="text-center">Chưa có người dùng</td></tr>
+              <tr><td colSpan={5} className="text-center">Chưa có người dùng</td></tr>
             )}
           </tbody>
         </table>

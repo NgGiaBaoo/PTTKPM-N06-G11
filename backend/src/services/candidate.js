@@ -4,8 +4,8 @@ function create(data) {
   return CandidateModel.create(data);
 }
 
-function findAll() {
-  return CandidateModel.findAll();
+function findAll(options) {
+  return CandidateModel.findAll(options);
 }
 
 function findOne(id) {

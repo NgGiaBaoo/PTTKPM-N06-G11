@@ -64,6 +64,7 @@ export default function Login() {
           </button>
         </form>
         <div className="auth-footer">
+          <Link to="/forgot-password">Quên mật khẩu?</Link><br />
           Chưa có tài khoản? <Link to="/register">Đăng ký</Link>
         </div>
       </div>

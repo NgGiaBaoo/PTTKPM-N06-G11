@@ -10,9 +10,22 @@ export default function JobDetail() {
   const navigate = useNavigate()
   const [job, setJob] = useState(null)
   const [candidate, setCandidate] = useState(null)
+  const [cvs, setCvs] = useState([])
+  const [cvId, setCvId] = useState('')
   const [applying, setApplying] = useState(false)
   const [applied, setApplied] = useState(false)
   const [loading, setLoading] = useState(true)
+
+  const reportJob = async () => {
+    const reason = window.prompt('Lý do báo cáo tin tuyển dụng')
+    if (!reason?.trim()) return
+    try {
+      await api.post('/content-reports', { entityType: 'Job', entityId: Number(id), reason })
+      toast('Đã gửi báo cáo để Admin xem xét')
+    } catch (err) {
+      toast(err.response?.data?.error || 'Không thể gửi báo cáo', 'error')
+    }
+  }
 
   useEffect(() => {
     const fetch = async () => {
@@ -20,12 +33,16 @@ export default function JobDetail() {
         const res = await api.get(`/jobs/${id}`)
         const j = res.data?.data || res.data
         setJob(j)
-        if (user?.role === 'Candidate') {
+        if (user?.role === 'Student') {
           try {
             const canRes = await api.get(`/candidates/by-user/${user.id}`)
             const c = canRes.data?.data || canRes.data
             setCandidate(c)
-            const appsRes = await api.get(`/applications?candidateId=${c.id}`)
+            const cvsRes = await api.get('/cvs')
+            setCvs(cvsRes.data || [])
+            const activeCv = (cvsRes.data || []).find((cv) => cv.isActive)
+            setCvId(activeCv?.id || '')
+            const appsRes = await api.get('/applications')
             const apps = Array.isArray(appsRes.data) ? appsRes.data : appsRes.data?.data || appsRes.data || []
             if (apps.some((a) => Number(a.jobId) === Number(id) || Number(a.JobID) === Number(id))) {
               setApplied(true)
@@ -50,11 +67,7 @@ export default function JobDetail() {
     }
     setApplying(true)
     try {
-      await api.post('/applications', {
-        candidateId: candidate.id,
-        jobId: Number(id),
-        status: 'Pending'
-      })
+      await api.post('/applications', { jobId: Number(id), cvId: cvId || undefined })
       setApplied(true)
       toast('Ứng tuyển thành công!')
     } catch (err) {
@@ -70,7 +83,7 @@ export default function JobDetail() {
   return (
     <div className="job-detail-page">
       <div className="job-detail-back">
-        <Link to={user?.role === 'Candidate' ? '/jobs/browse' : '/jobs'} className="back-link">&larr; Quay lại</Link>
+        <Link to={user?.role === 'Student' ? '/jobs/browse' : '/jobs'} className="back-link">&larr; Quay lại</Link>
       </div>
 
       <div className="job-detail-header-card">
@@ -122,8 +135,14 @@ export default function JobDetail() {
         </div>
       )}
 
-      {user?.role === 'Candidate' && (
+      {user?.role === 'Student' && (
         <div className="job-detail-apply-section">
+          {cvs.length > 0 && (
+            <select value={cvId} onChange={(e) => setCvId(e.target.value)} aria-label="Chọn CV">
+              <option value="">Không đính kèm CV</option>
+              {cvs.map((cv) => <option key={cv.id} value={cv.id}>{cv.fileName}{cv.isActive ? ' (đang dùng)' : ''}</option>)}
+            </select>
+          )}
           <button
             className={`btn btn-large ${applied ? 'btn-applied' : 'btn-apply'}`}
             onClick={handleApply}
@@ -138,6 +157,9 @@ export default function JobDetail() {
             )}
           </button>
         </div>
+      )}
+      {user?.role !== 'Admin' && (
+        <button className="btn btn-secondary" onClick={reportJob}>Báo cáo tin vi phạm</button>
       )}
     </div>
   )

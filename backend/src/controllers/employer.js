@@ -2,6 +2,7 @@ const express = require("express");
 const router = express.Router();
 const service = require("../services/employer");
 const { validateEmployer, normalize } = require("../validators/employer");
+const { parsePagination, paginationMeta } = require("../utils/pagination");
 
 router.post("/", async (req, res) => {
   const payload = req.body || {};
@@ -41,8 +42,14 @@ router.get("/by-user/:userId", async (req, res) => {
 
 router.get("/", async (req, res) => {
   try {
-    const employers = await service.getAllEmployers();
-    res.json(employers);
+    const pagination = parsePagination(req.query);
+    const employers = await service.getAllEmployers({
+      pagination,
+      keyword: String(req.query.keyword || "").trim(),
+      verificationStatus: req.query.verificationStatus,
+      industry: req.query.industry
+    });
+    res.json({ data: employers.data, pagination: paginationMeta(pagination.page, pagination.pageSize, employers.total) });
   } catch (err) {
     console.error("Error in employer:", err);
     res.status(500).json({ error: "Internal server error" });

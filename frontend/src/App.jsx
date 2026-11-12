@@ -17,6 +17,14 @@ import MyApplications from './pages/MyApplications'
 import Profile from './pages/Profile'
 import CompanyProfile from './pages/CompanyProfile'
 import EmployerApplications from './pages/EmployerApplications'
+import Programs from './pages/Programs'
+import Notifications from './pages/Notifications'
+import Security from './pages/Security'
+import VerificationRequests from './pages/VerificationRequests'
+import VerifyEmail from './pages/VerifyEmail'
+import ForgotPassword from './pages/ForgotPassword'
+import ResetPassword from './pages/ResetPassword'
+import ContentReports from './pages/ContentReports'
 
 export default function App() {
   return (
@@ -25,6 +33,9 @@ export default function App() {
         <Routes>
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
+          <Route path="/verify-email" element={<VerifyEmail />} />
+          <Route path="/forgot-password" element={<ForgotPassword />} />
+          <Route path="/reset-password" element={<ResetPassword />} />
           <Route
             element={
               <ProtectedRoute>
@@ -49,6 +60,11 @@ export default function App() {
             <Route path="/candidates" element={<Candidates />} />
             <Route path="/users" element={<Users />} />
             <Route path="/employer/company" element={<CompanyProfile />} />
+            <Route path="/programs" element={<Programs />} />
+            <Route path="/notifications" element={<Notifications />} />
+            <Route path="/security" element={<Security />} />
+            <Route path="/verification-requests" element={<VerificationRequests />} />
+            <Route path="/content-reports" element={<ContentReports />} />
           </Route>
           <Route path="*" element={<Navigate to="/dashboard" replace />} />
         </Routes>

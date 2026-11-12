@@ -9,6 +9,7 @@ export default function CompanyProfile() {
   const [form, setForm] = useState({ companyName: '', email: '', phone: '', address: '' })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
+  const [verification, setVerification] = useState([])
 
   useEffect(() => {
     if (!user) return
@@ -18,6 +19,18 @@ export default function CompanyProfile() {
         if (p) {
           setProfile(p)
           setForm({ companyName: p.companyName || '', email: p.email || '', phone: p.phone || '', address: p.address || '' })
+          api.get('/verification-requests/mine').then((response) => setVerification(response.data)).catch(() => {})
+        }
+
+        const submitVerification = async () => {
+          try {
+            await api.post('/verification-requests')
+            const response = await api.get('/verification-requests/mine')
+            setVerification(response.data)
+            toast('Đã gửi yêu cầu xác minh')
+          } catch (err) {
+            toast(err.response?.data?.error || 'Không thể gửi yêu cầu xác minh', 'error')
+          }
         }
       })
       .catch(() => {})
@@ -127,6 +140,13 @@ export default function CompanyProfile() {
                 {saving ? 'Đang lưu...' : (profile ? 'Cập nhật thông tin' : 'Tạo thông tin công ty')}
               </button>
             </div>
+            {profile && (
+              <div className="company-info-summary">
+                <h3>Trạng thái xác minh: {profile.verificationStatus || 'Draft'}</h3>
+                {profile.verificationStatus !== 'Verified' && <button type="button" className="btn btn-secondary" onClick={submitVerification}>Gửi yêu cầu xác minh</button>}
+                {verification[0] && <p>{verification[0].reason || `Yêu cầu gần nhất: ${verification[0].status}`}</p>}
+              </div>
+            )}
           </form>
         </div>
       </div>

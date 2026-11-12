@@ -13,18 +13,29 @@ export default function Dashboard() {
     const fetchData = async () => {
       try {
         if (user?.role === 'Admin') {
-          const [jobsRes, appsRes, employersRes, candidatesRes, usersRes] = await Promise.all([
-            api.get('/jobs'), api.get('/applications'), api.get('/employers'), api.get('/candidates'), api.get('/users'),
+          const [statsRes, jobsRes] = await Promise.all([
+            api.get('/statistics/system'), api.get('/jobs?pageSize=5'),
           ])
+          const summary = statsRes.data.data
           setStats({
-            jobs: (Array.isArray(jobsRes.data) ? jobsRes.data : jobsRes.data?.data || []).length,
-            applications: (Array.isArray(appsRes.data) ? appsRes.data : appsRes.data?.data || []).length,
-            employers: (Array.isArray(employersRes.data) ? employersRes.data : employersRes.data?.data || []).length,
-            candidates: (Array.isArray(candidatesRes.data) ? candidatesRes.data : candidatesRes.data?.data || []).length,
-            users: (Array.isArray(usersRes.data) ? usersRes.data : usersRes.data?.data || []).length,
+            jobs: summary.jobs,
+            applications: summary.applications,
+            employers: summary.employers,
+            candidates: summary.students,
+            users: summary.users,
           })
           const jobs = Array.isArray(jobsRes.data) ? jobsRes.data : jobsRes.data?.data || []
           setRecentJobs(jobs.slice(-5).reverse())
+        } else if (user?.role === 'SchoolStaff') {
+          const response = await api.get('/statistics/school')
+          const summary = response.data.data
+          setStats({
+            jobs: summary.jobs,
+            applications: summary.applications,
+            employers: summary.employers,
+            candidates: summary.students,
+            users: 0,
+          })
         } else if (user?.role === 'Employer') {
           const empRes = await api.get(`/employers/by-user/${user.id}`)
           const emp = empRes.data
@@ -38,7 +49,7 @@ export default function Dashboard() {
             setStats({ jobs: jobs.length, applications: apps.length, employers: 1, candidates: 0, users: 0 })
             setRecentJobs(jobs.slice(-5).reverse())
           }
-        } else if (user?.role === 'Candidate') {
+        } else if (user?.role === 'Student') {
           const [jobsRes, appsRes] = await Promise.all([
             api.get('/jobs'),
             api.get(`/candidates/by-user/${user.id}`).then((r) => {
@@ -64,6 +75,11 @@ export default function Dashboard() {
     { label: 'Nhà tuyển dụng', value: stats.employers, color: '#059669', link: '/employers' },
     { label: 'Ứng viên', value: stats.candidates, color: '#d97706', link: '/candidates' },
     { label: 'Người dùng', value: stats.users, color: '#7c3aed', link: '/users' },
+  ] : user?.role === 'SchoolStaff' ? [
+    { label: 'Tin tuyển dụng', value: stats.jobs, color: '#4f46e5', link: '/jobs' },
+    { label: 'Đơn ứng tuyển', value: stats.applications, color: '#0891b2', link: '/applications' },
+    { label: 'Doanh nghiệp', value: stats.employers, color: '#059669', link: '/employers' },
+    { label: 'Sinh viên', value: stats.candidates, color: '#d97706', link: '/candidates' },
   ] : user?.role === 'Employer' ? [
     { label: 'Tin tuyển dụng', value: stats.jobs, color: '#4f46e5', link: '/jobs' },
     { label: 'Đơn ứng tuyển', value: stats.applications, color: '#0891b2', link: '/employer/applications' },
@@ -103,7 +119,7 @@ export default function Dashboard() {
             </thead>
             <tbody>
               {recentJobs.map((job) => (
-                <tr key={job.id} className="clickable-row" onClick={() => navigate(`/jobs/${user?.role === 'Candidate' ? 'browse/' : ''}${job.id}`)}>
+                <tr key={job.id} className="clickable-row" onClick={() => navigate(`/jobs/${user?.role === 'Student' ? 'browse/' : ''}${job.id}`)}>
                   <td>{job.id}</td>
                   <td>{job.title}</td>
                   <td>{job.company || '--'}</td>

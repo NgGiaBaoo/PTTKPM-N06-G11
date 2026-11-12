@@ -1,4 +1,7 @@
-const dotenv = require("dotenv").config({path : '../.env'});
+const path = require("path");
+require("dotenv").config({
+  path: path.resolve(__dirname, "../.env"),
+});
 const express = require("express");
 const cookieParser = require("cookie-parser");
 const session = require("express-session");
@@ -9,6 +12,7 @@ const crypto = require("crypto");
 const helmet = require('helmet');
 const morgan = require('morgan');
 const rateLimit = require('express-rate-limit');
+const { startJobExpiryScheduler } = require("./src/services/jobExpiry");
 
 const app = express();
 
@@ -46,6 +50,12 @@ app.use(
 app.use("/auth/login", authLimiter);
 app.use("/auth/register", authLimiter);
 app.use("/auth", require("./src/controllers/auth"));
+app.use("/notifications", requireAuth, require("./src/controllers/notification"));
+app.use("/verification-requests", requireAuth, require("./src/controllers/verification"));
+app.use("/cvs", requireAuth, require("./src/controllers/cv"));
+app.use("/audit-logs", requireAuth, require("./src/controllers/audit"));
+app.use("/statistics", requireAuth, require("./src/controllers/statistics"));
+app.use("/content-reports", requireAuth, require("./src/controllers/contentReport"));
 // Employers: GET for read, PUT/POST for employer to manage own profile; DELETE is Admin-only
 app.use("/employers", requireAuth, (req, res, next) => {
   if (req.method === 'GET' || req.method === 'PUT' || req.method === 'POST') return next();
@@ -56,9 +66,11 @@ app.use("/jobs", requireAuth, require("./src/controllers/job"));
 // Applications: GET is role-aware in controller (Candidate sees own, Employer sees own, Admin sees all)
 // POST for Candidates to apply, PUT/DELETE are Admin-only
 app.use("/applications", requireAuth, (req, res, next) => {
-  if (req.method === 'GET' || req.method === 'POST') return next();
+  if (req.method === 'GET' || req.method === 'POST' || req.method === 'PUT') return next();
   requireRole("Admin")(req, res, next);
 }, require("./src/controllers/application"));
+// Connection programs are managed by the university and joined by students/employers.
+app.use("/programs", requireAuth, require("./src/controllers/program"));
 // Candidates: GET is role-aware (Candidate/Employer can read own data, Admin sees all)
 // PUT/POST for candidates to manage own profile; DELETE is Admin-only
 app.use("/candidates", requireAuth, (req, res, next) => {
@@ -68,6 +80,7 @@ app.use("/candidates", requireAuth, (req, res, next) => {
 app.use("/users", requireAuth, requireRole("Admin"), require("./src/controllers/user"));
 
 const PORT = process.env.BACKEND_PORT || 3000; // Default port : 3000
+startJobExpiryScheduler();
 app.listen(PORT, () => {
     console.log(`Server running on port ${PORT}`);
 });
