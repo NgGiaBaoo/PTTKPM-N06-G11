@@ -39,19 +39,73 @@ export default function VerificationRequests() {
         <p>{items.length} yêu cầu đang chờ xử lý</p>
       </div>
       <div className="card">
-        {items.length === 0 ? <p>Không có yêu cầu đang chờ.</p> : items.map((item) => (
-          <article className="notification-item" key={item.id}>
-            <div>
-              <h3>{item.companyName}</h3>
-              <p>Mã doanh nghiệp: {item.businessCode || '--'}</p>
-              <small>Gửi ngày {new Date(item.submittedAt).toLocaleString('vi-VN')}</small>
-            </div>
-            <div>
-              <button className="btn btn-primary" onClick={() => review(item, 'Approved')}>Chấp thuận</button>{' '}
-              <button className="btn btn-delete" onClick={() => review(item, 'Rejected')}>Từ chối</button>
-            </div>
-          </article>
-        ))}
+        {items.length === 0 ? <p>Không có yêu cầu đang chờ.</p> : (
+          <div className="employer-app-cards">
+            {items.map((item) => (
+              <article className="employer-app-card" key={item.id} style={{ borderLeftColor: '#2563eb' }}>
+                <div className="eapp-job-section">
+                  <div className="eapp-job-icon">&#127970;</div>
+                  <div className="eapp-job-info">
+                    <h3>{item.companyName}</h3>
+                    <div className="eapp-job-meta">
+                      <span className="eapp-job-tag location">{item.industry || 'Chưa cập nhật lĩnh vực'}</span>
+                      <span className="eapp-job-tag salary">Mã: {item.businessCode || '--'}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="eapp-candidate-section">
+                  <div className="eapp-header">
+                    <div className="eapp-candidate-info">
+                      <div className="eapp-avatar">{(item.companyName || '?').charAt(0).toUpperCase()}</div>
+                      <div>
+                        <h3>Hồ sơ doanh nghiệp</h3>
+                        <span className="eapp-candidate-sub">
+                          Gửi ngày {new Date(item.submittedAt).toLocaleDateString('vi-VN')}
+                        </span>
+                      </div>
+                    </div>
+                    <div className="eapp-status" style={{ backgroundColor: '#eff6ff', color: '#2563eb', borderColor: '#bfdbfe' }}>
+                      ⏳ Chờ xử lý
+                    </div>
+                  </div>
+
+                  <div className="eapp-body">
+                    <div className="eapp-detail-grid">
+                      <div className="eapp-detail-item">
+                        <span className="eapp-detail-label">Email</span>
+                        <span className="eapp-detail-value">{item.email || '--'}</span>
+                      </div>
+                      <div className="eapp-detail-item">
+                        <span className="eapp-detail-label">Số điện thoại</span>
+                        <span className="eapp-detail-value">{item.phone || '--'}</span>
+                      </div>
+                      <div className="eapp-detail-item">
+                        <span className="eapp-detail-label">Địa chỉ</span>
+                        <span className="eapp-detail-value">{item.address || '--'}</span>
+                      </div>
+                      <div className="eapp-detail-item">
+                        <span className="eapp-detail-label">Giới thiệu</span>
+                        <span className="eapp-detail-value">{item.description || '--'}</span>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="eapp-footer">
+                  <div className="eapp-actions">
+                    <button className="btn btn-approve btn-with-icon" onClick={() => review(item, 'Approved')}>
+                      <span>✅</span> Chấp thuận
+                    </button>
+                    <button className="btn btn-reject btn-with-icon" onClick={() => review(item, 'Rejected')}>
+                      <span>❌</span> Từ chối
+                    </button>
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )

@@ -1,10 +1,9 @@
 const JobModel = require("../models/Job");
 
-async function createJob(job) {
-  if (!job.employerId) {
+async function createJob(job, employerId = job.employerId) {
+  if (!employerId) {
     throw new Error("employerId is required to create a job");
   }
-  const employerId = job.employerId;
   return JobModel.createJob(job, employerId);
 }
 

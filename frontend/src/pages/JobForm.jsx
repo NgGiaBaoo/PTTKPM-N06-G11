@@ -139,6 +139,14 @@ export default function JobForm() {
               <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
             </div>
           </div>
+          <div className="form-group">
+            <label>Trạng thái tin</label>
+            <select value={form.status} onChange={(e) => setForm({ ...form, status: e.target.value })}>
+              <option value="Draft">Bản nháp (chưa hiển thị cho sinh viên)</option>
+              <option value="Published">Đăng công khai</option>
+              <option value="Closed">Đóng nhận hồ sơ</option>
+            </select>
+          </div>
           <div className="form-row">
             <div className="form-group">
               <label>Yêu cầu ứng viên</label>

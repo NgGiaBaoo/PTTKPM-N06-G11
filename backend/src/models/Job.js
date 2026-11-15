@@ -23,7 +23,7 @@ function createJob(job, employerId) {
   return new Promise((resolve, reject) => {
     db.query(sql, params, (err, result) => {
       if (err) return reject(err);
-      resolve({ id: result.insertId, ...job });
+      resolve({ id: result.insertId, ...job, employerId });
     });
   });
 }

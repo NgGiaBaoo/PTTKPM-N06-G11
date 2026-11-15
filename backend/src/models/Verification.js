@@ -39,7 +39,9 @@ function listPending() {
     db.query(
       `SELECT V.VerificationRequestID AS id, V.EmployerID AS employerId,
               V.Status AS status, V.SubmittedAt AS submittedAt, V.Reason AS reason,
-              E.CompanyName AS companyName, E.BusinessCode AS businessCode
+              E.CompanyName AS companyName, E.BusinessCode AS businessCode,
+              E.Industry AS industry, E.Email AS email, E.Phone AS phone,
+              E.Address AS address, E.Description AS description
        FROM VerificationRequests V
        JOIN EmployerProfiles E ON E.EmployerID = V.EmployerID
        WHERE V.Status = 'Pending' ORDER BY V.SubmittedAt ASC`,

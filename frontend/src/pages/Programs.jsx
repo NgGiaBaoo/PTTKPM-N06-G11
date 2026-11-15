@@ -4,6 +4,18 @@ import { useAuth } from '../context/AuthContext'
 
 const emptyForm = { name: '', schoolId: '', description: '', startDate: '', endDate: '', location: '', status: 'Draft' }
 
+const statusLabels = {
+  Draft: 'Bản nháp',
+  Open: 'Đang mở đăng ký',
+  Closed: 'Đã kết thúc',
+  Cancelled: 'Đã hủy',
+}
+
+function formatDate(value) {
+  if (!value) return 'Chưa xác định'
+  return new Date(value).toLocaleDateString('vi-VN')
+}
+
 export default function Programs() {
   const { user } = useAuth()
   const [programs, setPrograms] = useState([])
@@ -78,23 +90,51 @@ export default function Programs() {
           <button className="btn btn-primary" type="submit">Tạo chương trình</button>
         </form>
       )}
-      <div className="card">
-        <h2>Danh sách chương trình</h2>
-        {programs.length === 0 ? <p>Chưa có chương trình nào.</p> : programs.map((program) => (
-          <article className="program-item" key={program.id}>
-            <div>
-              <h3>{program.name}</h3>
-              <p>{program.description || 'Chưa có mô tả'}</p>
-              <small>{program.startDate} - {program.endDate} · {program.location || 'Chưa xác định'}</small>
-              <small>{program.studentCount} sinh viên · {program.employerCount} doanh nghiệp</small>
-            </div>
-            {(user.role === 'Student' || user.role === 'Employer') && program.status === 'Open' && (
-              <button className="btn btn-secondary" onClick={() => participate(program)}>
-                {user.role === 'Student' ? 'Đăng ký tham gia' : 'Đăng ký doanh nghiệp'}
-              </button>
-            )}
-          </article>
-        ))}
+      <div className="program-list-section">
+        <div className="section-heading">
+          <div>
+            <h2>Chương trình nổi bật</h2>
+            <p>Khám phá các hoạt động kết nối và cơ hội nghề nghiệp</p>
+          </div>
+          <span className="program-count">{programs.length} chương trình</span>
+        </div>
+        {programs.length === 0 ? <div className="card"><p>Chưa có chương trình nào.</p></div> : (
+          <div className="program-banner-list">
+            {programs.map((program) => (
+              <article className={`program-banner program-status-${program.status?.toLowerCase()}`} key={program.id}>
+                <div className="program-banner-art">
+                  <span className="program-banner-icon">&#127891;</span>
+                  <span className="program-banner-shape shape-one" />
+                  <span className="program-banner-shape shape-two" />
+                </div>
+                <div className="program-banner-content">
+                  <div className="program-banner-topline">
+                    <span className="program-eyebrow">CHƯƠNG TRÌNH KẾT NỐI</span>
+                    <span className="program-status">{statusLabels[program.status] || program.status}</span>
+                  </div>
+                  <h3>{program.name}</h3>
+                  <p className="program-description">{program.description || 'Cơ hội kết nối sinh viên, doanh nghiệp và nhà trường.'}</p>
+                  <div className="program-banner-meta">
+                    <span>&#128197; {formatDate(program.startDate)} - {formatDate(program.endDate)}</span>
+                    <span>&#128205; {program.location || 'Chưa xác định địa điểm'}</span>
+                  </div>
+                  <div className="program-banner-footer">
+                    <div className="program-participants">
+                      <span>&#128100; {program.studentCount || 0} sinh viên</span>
+                      <span>&#127970; {program.employerCount || 0} doanh nghiệp</span>
+                    </div>
+                    {(user.role === 'Student' || user.role === 'Employer') && program.status === 'Open' && (
+                      <button className="btn btn-light" onClick={() => participate(program)}>
+                        {user.role === 'Student' ? 'Đăng ký tham gia' : 'Đăng ký doanh nghiệp'}
+                        <span aria-hidden="true">&rarr;</span>
+                      </button>
+                    )}
+                  </div>
+                </div>
+              </article>
+            ))}
+          </div>
+        )}
       </div>
     </div>
   )
