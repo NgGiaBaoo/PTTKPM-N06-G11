@@ -6,7 +6,9 @@ import { toast } from '../components/Toast'
 export default function CompanyProfile() {
   const { user } = useAuth()
   const [profile, setProfile] = useState(null)
-  const [form, setForm] = useState({ companyName: '', email: '', phone: '', address: '' })
+  const [form, setForm] = useState({
+    companyName: '', businessCode: '', industry: '', email: '', phone: '', address: '', description: ''
+  })
   const [loading, setLoading] = useState(true)
   const [saving, setSaving] = useState(false)
   const [verification, setVerification] = useState([])
@@ -18,24 +20,31 @@ export default function CompanyProfile() {
         const p = res.data
         if (p) {
           setProfile(p)
-          setForm({ companyName: p.companyName || '', email: p.email || '', phone: p.phone || '', address: p.address || '' })
+          setForm({
+            companyName: p.companyName || '', businessCode: p.businessCode || '',
+            industry: p.industry || '', email: p.email || '', phone: p.phone || '',
+            address: p.address || '', description: p.description || ''
+          })
           api.get('/verification-requests/mine').then((response) => setVerification(response.data)).catch(() => {})
-        }
-
-        const submitVerification = async () => {
-          try {
-            await api.post('/verification-requests')
-            const response = await api.get('/verification-requests/mine')
-            setVerification(response.data)
-            toast('Đã gửi yêu cầu xác minh')
-          } catch (err) {
-            toast(err.response?.data?.error || 'Không thể gửi yêu cầu xác minh', 'error')
-          }
         }
       })
       .catch(() => {})
       .finally(() => setLoading(false))
   }, [user])
+
+  const submitVerification = async () => {
+    try {
+      await api.post('/verification-requests')
+      const response = await api.get('/verification-requests/mine')
+      setVerification(response.data)
+      const latest = response.data?.[0]
+      const statusMap = { Approved: 'Verified', Rejected: 'Rejected', Revoked: 'Revoked', Pending: 'Pending' }
+      setProfile((current) => current ? { ...current, verificationStatus: statusMap[latest?.status] || current.verificationStatus } : current)
+      toast('Đã gửi yêu cầu xác minh')
+    } catch (err) {
+      toast(err.response?.data?.error || 'Không thể gửi yêu cầu xác minh', 'error')
+    }
+  }
 
   const handleSubmit = async (e) => {
     e.preventDefault()
@@ -51,7 +60,11 @@ export default function CompanyProfile() {
       const p = res.data
       if (p) {
         setProfile(p)
-        setForm({ companyName: p.companyName || '', email: p.email || '', phone: p.phone || '', address: p.address || '' })
+        setForm({
+          companyName: p.companyName || '', businessCode: p.businessCode || '',
+          industry: p.industry || '', email: p.email || '', phone: p.phone || '',
+          address: p.address || '', description: p.description || ''
+        })
       }
       toast('Cập nhật thông tin công ty thành công!')
     } catch (err) {
@@ -99,6 +112,16 @@ export default function CompanyProfile() {
             </div>
             <div className="form-row">
               <div className="form-group">
+                <label>Mã doanh nghiệp</label>
+                <input type="text" value={form.businessCode} onChange={(e) => setForm({ ...form, businessCode: e.target.value })} />
+              </div>
+              <div className="form-group">
+                <label>Lĩnh vực hoạt động</label>
+                <input type="text" value={form.industry} onChange={(e) => setForm({ ...form, industry: e.target.value })} />
+              </div>
+            </div>
+            <div className="form-row">
+              <div className="form-group">
                 <label>Số điện thoại</label>
                 <div className="input-icon-wrapper">
                   <span className="input-icon">&#9742;</span>
@@ -113,11 +136,23 @@ export default function CompanyProfile() {
                 </div>
               </div>
             </div>
+            <div className="form-group">
+              <label>Giới thiệu doanh nghiệp</label>
+              <textarea rows={4} value={form.description} onChange={(e) => setForm({ ...form, description: e.target.value })} />
+            </div>
 
             {profile && (
               <div className="company-info-summary">
                 <h3>Thông tin hiện tại</h3>
                 <div className="summary-grid">
+                  <div className="summary-item">
+                    <span className="summary-label">Mã doanh nghiệp</span>
+                    <span className="summary-value">{profile.businessCode || '--'}</span>
+                  </div>
+                  <div className="summary-item">
+                    <span className="summary-label">Lĩnh vực</span>
+                    <span className="summary-value">{profile.industry || '--'}</span>
+                  </div>
                   <div className="summary-item">
                     <span className="summary-label">Email</span>
                     <span className="summary-value">{profile.email}</span>

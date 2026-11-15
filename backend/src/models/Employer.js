@@ -16,8 +16,13 @@ function mapEmployerRow(row) {
 }
 
 function createEmployer(data) {
-  const sql = `INSERT INTO EmployerProfiles (UserID, CompanyName, Email, Phone, Address) VALUES (?, ?, ?, ?, ?)`;
-  const params = [data.userId, data.companyName, data.email, data.phone, data.address];
+  const sql = `INSERT INTO EmployerProfiles
+    (UserID, CompanyName, BusinessCode, Industry, Email, Phone, Address, Description)
+    VALUES (?, ?, ?, ?, ?, ?, ?, ?)`;
+  const params = [
+    data.userId, data.companyName, data.businessCode, data.industry,
+    data.email, data.phone, data.address, data.description
+  ];
   return new Promise((resolve, reject) => {
     db.query(sql, params, (err, result) => {
       if (err) return reject(err);

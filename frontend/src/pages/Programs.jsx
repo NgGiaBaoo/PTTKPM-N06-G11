@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import api from '../api/axios'
 import { useAuth } from '../context/AuthContext'
 
-const emptyForm = { name: '', description: '', startDate: '', endDate: '', location: '', status: 'Draft' }
+const emptyForm = { name: '', schoolId: '', description: '', startDate: '', endDate: '', location: '', status: 'Draft' }
 
 export default function Programs() {
   const { user } = useAuth()
@@ -63,6 +63,9 @@ export default function Programs() {
         <form className="card form-grid" onSubmit={createProgram}>
           <h2>Tạo chương trình mới</h2>
           <input name="name" placeholder="Tên chương trình" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })} required />
+          {user.role === 'Admin' && (
+            <input name="schoolId" type="number" min="1" placeholder="Mã trường" value={form.schoolId} onChange={(e) => setForm({ ...form, schoolId: e.target.value })} required />
+          )}
           <input name="location" placeholder="Địa điểm" value={form.location} onChange={(e) => setForm({ ...form, location: e.target.value })} />
           <input name="startDate" type="date" value={form.startDate} onChange={(e) => setForm({ ...form, startDate: e.target.value })} required />
           <input name="endDate" type="date" value={form.endDate} onChange={(e) => setForm({ ...form, endDate: e.target.value })} required />

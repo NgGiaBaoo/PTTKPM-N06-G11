@@ -2,13 +2,13 @@ import { useState, useEffect } from 'react'
 import api from '../api/axios'
 
 const statusColors = {
-  Pending: '#d97706',
-  Reviewed: '#2563eb',
+  Submitted: '#d97706',
+  UnderReview: '#2563eb',
   Accepted: '#059669',
   Rejected: '#dc2626',
 }
 
-const statusOptions = ['Pending', 'Reviewed', 'Accepted', 'Rejected']
+const statusOptions = ['Submitted', 'UnderReview', 'Accepted', 'Rejected', 'Withdrawn']
 
 export default function Applications() {
   const [applications, setApplications] = useState([])
@@ -70,7 +70,7 @@ export default function Applications() {
                 </td>
                 <td className="actions">
                   <select
-                    value={app.status || 'Pending'}
+                    value={app.status || 'Submitted'}
                     onChange={(e) => handleStatusChange(app.id, e.target.value)}
                     className="status-select"
                     style={{ borderColor: statusColors[app.status] || '#6b7280' }}

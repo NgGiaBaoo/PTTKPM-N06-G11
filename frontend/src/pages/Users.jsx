@@ -12,6 +12,15 @@ export default function Users() {
       .finally(() => setLoading(false))
   }, [])
 
+  const changeStatus = async (user, status) => {
+    try {
+      await api.post(`/users/${user.id}/status`, { status })
+      setUsers((current) => current.map((item) => item.id === user.id ? { ...item, accountStatus: status } : item))
+    } catch (err) {
+      alert(err.response?.data?.error || 'Cập nhật trạng thái thất bại')
+    }
+  }
+
   const handleDelete = async (id) => {
     if (!confirm('Bạn có chắc muốn xóa người dùng này?')) return
     try {
@@ -19,15 +28,6 @@ export default function Users() {
       setUsers(users.filter((u) => u.id !== id))
     } catch (err) {
       alert(err.response?.data?.error || 'Xóa thất bại')
-    }
-
-    const changeStatus = async (user, status) => {
-      try {
-        await api.post(`/users/${user.id}/status`, { status })
-        setUsers((current) => current.map((item) => item.id === user.id ? { ...item, accountStatus: status } : item))
-      } catch (err) {
-        alert(err.response?.data?.error || 'Cập nhật trạng thái thất bại')
-      }
     }
   }
 

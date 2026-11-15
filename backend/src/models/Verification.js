@@ -3,10 +3,21 @@ const db = require("../config/database");
 function submit(employerId) {
   return new Promise((resolve, reject) => {
     db.query(
+      `SELECT VerificationRequestID FROM VerificationRequests
+       WHERE EmployerID = ? AND Status = 'Pending' LIMIT 1`,
+      [employerId],
+      (findError, existing) => {
+        if (findError) return reject(findError);
+        if (existing.length) {
+          return reject(Object.assign(new Error("Verification request already pending"), { code: "ALREADY_PENDING" }));
+        }
+        db.query(
       `INSERT INTO VerificationRequests (EmployerID, Status)
        VALUES (?, 'Pending')`,
       [employerId],
-      (err, result) => err ? reject(err) : resolve({ id: result.insertId })
+          (err, result) => err ? reject(err) : resolve({ id: result.insertId })
+        );
+      }
     );
   });
 }

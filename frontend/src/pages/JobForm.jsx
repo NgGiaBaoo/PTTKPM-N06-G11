@@ -10,7 +10,8 @@ export default function JobForm() {
   const navigate = useNavigate()
   const isEdit = Boolean(id)
   const [form, setForm] = useState({
-    title: '', company: '', location: '', salary: '', description: ''
+    title: '', company: '', location: '', salary: '', jobType: 'FullTime',
+    deadline: '', requirements: '', benefits: '', description: '', status: 'Draft'
   })
   const [loading, setLoading] = useState(false)
   const [fetching, setFetching] = useState(isEdit)
@@ -27,6 +28,11 @@ export default function JobForm() {
             location: job.location || '',
             salary: job.salary || '',
             description: job.description || '',
+            jobType: job.jobType || 'FullTime',
+            deadline: job.deadline ? String(job.deadline).slice(0, 10) : '',
+            requirements: job.requirements || '',
+            benefits: job.benefits || '',
+            status: job.status || 'Draft',
           })
         } catch {
           alert('Không tìm thấy tin tuyển dụng')
@@ -110,6 +116,16 @@ export default function JobForm() {
               />
             </div>
             <div className="form-group">
+              <label>Loại công việc</label>
+              <select value={form.jobType} onChange={(e) => setForm({ ...form, jobType: e.target.value })}>
+                <option value="FullTime">Toàn thời gian</option>
+                <option value="PartTime">Bán thời gian</option>
+                <option value="Internship">Thực tập</option>
+              </select>
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
               <label>Mức lương</label>
               <input
                 type="text"
@@ -117,6 +133,20 @@ export default function JobForm() {
                 onChange={(e) => setForm({ ...form, salary: e.target.value })}
                 placeholder="Ví dụ: 2000 USD"
               />
+            </div>
+            <div className="form-group">
+              <label>Hạn nhận hồ sơ</label>
+              <input type="date" value={form.deadline} onChange={(e) => setForm({ ...form, deadline: e.target.value })} />
+            </div>
+          </div>
+          <div className="form-row">
+            <div className="form-group">
+              <label>Yêu cầu ứng viên</label>
+              <textarea rows={3} value={form.requirements} onChange={(e) => setForm({ ...form, requirements: e.target.value })} />
+            </div>
+            <div className="form-group">
+              <label>Quyền lợi</label>
+              <textarea rows={3} value={form.benefits} onChange={(e) => setForm({ ...form, benefits: e.target.value })} />
             </div>
           </div>
           <div className="form-group">

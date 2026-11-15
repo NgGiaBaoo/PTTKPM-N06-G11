@@ -17,6 +17,9 @@ router.post("/", requireRole("Employer"), async (req, res) => {
     const result = await model.submit(employer.id);
     res.status(201).json(result);
   } catch (err) {
+    if (err.code === "ALREADY_PENDING") {
+      return res.status(409).json({ error: "A verification request is already pending" });
+    }
     console.error("Error submitting verification:", err);
     res.status(500).json({ error: "Internal server error" });
   }

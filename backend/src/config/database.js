@@ -4,9 +4,15 @@ const path = require("path");
 
 let sslConfig;
 try {
-    sslConfig = { ca: fs.readFileSync(path.join(__dirname, "ca.pem")) };
+    sslConfig = {
+        ca: fs.readFileSync(path.join(__dirname, "ca.pem")),
+        rejectUnauthorized: true
+    };
 } catch {
-    sslConfig = undefined;
+    if (process.env.DB_SSL === "true") {
+        sslConfig = { rejectUnauthorized: false };
+        console.warn("Cảnh báo: Đang dùng TLS nhưng chưa có ca.pem; hãy bổ sung CA certificate của Aiven để xác thực máy chủ.");
+    }
 }
 
 const connection = mysql.createConnection({
@@ -22,11 +28,7 @@ const connection = mysql.createConnection({
 
 connection.connect((err) => {
     if (err) {
-        if (!sslConfig) {
-            console.error("Lỗi kết nối: Không tìm thấy file ca.pem - server yêu cầu SSL/TLS để kết nối.");
-        } else {
-            console.error("Lỗi kết nối:", err);
-        }
+        console.error("Lỗi kết nối:", err);
     } else {
         console.log("Kết nối Database thành công!");
     }

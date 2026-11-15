@@ -134,6 +134,18 @@ export default function JobDetail() {
           </div>
         </div>
       )}
+      {job.requirements && (
+        <div className="job-detail-section">
+          <h2>Yêu cầu ứng viên</h2>
+          <div className="job-detail-description">{job.requirements}</div>
+        </div>
+      )}
+      {job.benefits && (
+        <div className="job-detail-section">
+          <h2>Quyền lợi</h2>
+          <div className="job-detail-description">{job.benefits}</div>
+        </div>
+      )}
 
       {user?.role === 'Student' && (
         <div className="job-detail-apply-section">
