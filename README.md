@@ -1,4 +1,4 @@
-# TKWedNC-CK
+# PTTKPM
 
 Nền tảng kết nối **trường đại học - sinh viên - doanh nghiệp** cho tuyển dụng,
 thực tập và các chương trình định hướng nghề nghiệp.
@@ -26,7 +26,7 @@ thực tập và các chương trình định hướng nghề nghiệp.
 ## 2. Cấu trúc dự án
 
 ```text
-TKWedNC-CK/
+PTTKPM
 ├── backend/
 │   ├── server.js
 │   ├── package.json
